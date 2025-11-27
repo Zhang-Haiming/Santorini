@@ -1,0 +1,313 @@
+/* Import animate.css - same as tic-tac-toe */
+@import 'animate.css';
+
+/* Main container */
+.App {
+  animation: fadeIn 0.8s ease-in-out;
+  text-align: center;
+  padding: 20px;
+  min-height: 100vh;
+}
+
+/* Game title */
+.game-title h1 {
+  color: white;
+  font-size: 3em;
+  margin: 0 0 20px 0;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+/* Message bar - shows current instruction */
+#message {
+  background: linear-gradient(90deg, #74b9ff, #0984e3);
+  padding: 15px 30px;
+  margin: 20px auto;
+  text-align: center;
+  border-radius: 10px;
+  color: white;
+  font-weight: bold;
+  font-size: 1.3em;
+  max-width: 600px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+}
+
+/* Board - 5x5 grid (changed from 3x3 in tic-tac-toe) */
+#board {
+  display: grid;
+  grid-template-columns: repeat(5, 80px);  /* 5 columns */
+  grid-template-rows: repeat(5, 80px);     /* 5 rows */
+  gap: 5px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 15px;
+  border-radius: 15px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  margin: 20px auto;
+  width: fit-content;
+  animation: slideInDown 0.6s ease-out;
+}
+
+/* Cell styling - same pattern as tic-tac-toe */
+.cell {
+  background: linear-gradient(145deg, #f0f0f0, #cacaca);
+  border: 2px solid rgba(0, 0, 0, 0.1);
+  padding: 5px;
+  font-size: 20px;
+  font-weight: bold;
+  width: 80px;
+  height: 80px;
+  text-align: center;
+  border-radius: 10px;
+  transition: all 0.3s ease;
+  cursor: default;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: #333;
+  position: relative;
+}
+
+.cell:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+}
+
+/* Playable cells - same pattern as tic-tac-toe */
+.cell.playable {
+  background: linear-gradient(145deg, #a8e6cf, #7bed9f);
+  border-color: #2ecc71;
+  cursor: pointer;
+  box-shadow: 0 0 10px rgba(46, 204, 113, 0.5);
+  animation: pulse 1.5s infinite;
+}
+
+.cell.playable:hover {
+  background: linear-gradient(145deg, #7bed9f, #55efc4);
+  box-shadow: 0 5px 15px rgba(46, 204, 113, 0.4);
+  transform: translateY(-3px) scale(1.05);
+}
+
+/* Worker colors - Santorini specific */
+.cell.artemis .cell-text {
+  color: #e74c3c;
+  font-size: 24px;
+  font-weight: bold;
+}
+
+.cell.demeter .cell-text {
+  color: #3498db;
+  font-size: 24px;
+  font-weight: bold;
+}
+
+/* Tower blocks visual indicator */
+.tower-blocks {
+  position: absolute;
+  bottom: 5px;
+  display: flex;
+  gap: 2px;
+}
+
+.tower-block {
+  width: 8px;
+  height: 8px;
+  background: #8b6f47;
+  border: 1px solid #6b4423;
+  border-radius: 2px;
+}
+
+/* Dome indicator */
+.cell.has-dome::after {
+  content: 'Dome'; /* Unicode for mountain (dome-like symbol) */
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  font-size: 16px;
+  color: #8e44ad;
+}
+
+/* Winner banner */
+.winner-banner {
+  font-size: 2em;
+  color: white;
+  background: linear-gradient(90deg, #00b894, #00cec9);
+  padding: 20px;
+  margin: 20px auto;
+  border-radius: 10px;
+  max-width: 600px;
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
+  font-weight: bold;
+}
+
+/* Bottom bar with buttons - same pattern as tic-tac-toe */
+#bottombar {
+  margin: 20px auto;
+  max-width: 500px;
+  animation: slideInUp 0.6s ease-out 0.3s both;
+}
+
+#bottombar button {
+  padding: 15px 40px;
+  font-size: 1.2em;
+  font-weight: bold;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  background: linear-gradient(145deg, #00b894, #00cec9);
+  color: white;
+  box-shadow: 0 4px 15px rgba(0, 184, 148, 0.3);
+}
+
+#bottombar button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 184, 148, 0.4);
+  background: linear-gradient(145deg, #00a085, #00b7b8);
+}
+
+#bottombar button:active {
+  transform: translateY(0);
+}
+
+/* Instructions section */
+.instructions {
+  background: rgba(255, 255, 255, 0.95);
+  padding: 20px 30px;
+  border-radius: 10px;
+  margin-top: 30px;
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
+  animation: fadeIn 1s ease-in 0.5s both;
+}
+
+.instructions h3 {
+  margin-top: 0;
+  color: #667eea;
+  font-size: 1.5em;
+}
+
+.instructions ol {
+  text-align: left;
+  line-height: 1.8;
+  font-size: 1.1em;
+}
+
+.instructions li {
+  margin-bottom: 10px;
+}
+
+.instructions strong {
+  color: #764ba2;
+}
+
+/* Player legend */
+.player-legend {
+  display: flex;
+  justify-content: space-around;
+  margin-top: 20px;
+  padding-top: 15px;
+  border-top: 2px solid #e0e0e0;
+}
+
+.player-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 1.1em;
+  font-weight: bold;
+}
+
+.player-item .symbol {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: bold;
+  font-size: 20px;
+}
+
+.player-item.artemis .symbol {
+  background: #e74c3c;
+  border: 2px solid #c0392b;
+}
+
+.player-item.demeter .symbol {
+  background: #3498db;
+  border: 2px solid #2980b9;
+}
+
+/* Base styling - same as tic-tac-toe */
+html, body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  font-family: 'Arial', sans-serif;
+}
+
+/* Animations - same as tic-tac-toe */
+@keyframes slideInDown {
+  from {
+    transform: translateY(-100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slideInUp {
+  from {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.03);
+  }
+}
+
+/* Responsive design for smaller screens */
+@media (max-width: 768px) {
+  #board {
+    grid-template-columns: repeat(5, 60px);
+    grid-template-rows: repeat(5, 60px);
+    gap: 4px;
+    padding: 10px;
+  }
+
+  .cell {
+    width: 60px;
+    height: 60px;
+    font-size: 16px;
+  }
+
+  .game-title h1 {
+    font-size: 2em;
+  }
+
+  #message {
+    font-size: 1em;
+    padding: 10px 20px;
+  }
+}
