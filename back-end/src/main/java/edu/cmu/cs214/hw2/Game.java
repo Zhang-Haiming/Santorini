@@ -1,6 +1,7 @@
 package edu.cmu.cs214.hw2;
 
 import java.util.List;
+import edu.cmu.cs214.hw2.godcard.GodCard;
 
 /**
  * Main game controller for Santorini
@@ -13,6 +14,7 @@ public class Game {
     private TurnPhase currentPhase;
     private Worker selectedWorker;
     private List<Space> available; // for move and build
+    private GodCard[] godCards;
     private static final int WINNING_TOWER_LEVEL = 3;
     /**
      * Constructor to create a new game
@@ -25,10 +27,11 @@ public class Game {
         this.currentPhase=TurnPhase.PLAYER1_INITIAL_WORKER1;
         this.selectedWorker=null;
         this.available=null;
+        this.godCards=new GodCard[]{null,null};
         initialPlayer();
     }
 
-    public Game(Board board, Player[] players, int nextPlayerIndex, int winner, TurnPhase nextPhase, Worker selectedWorker, List<Space> available) {
+    public Game(Board board, Player[] players, int nextPlayerIndex, int winner, TurnPhase nextPhase, Worker selectedWorker, List<Space> available, GodCard[] godCards) {
         this.board = board;
         this.players = players;
         this.currentPlayerIndex = nextPlayerIndex;
@@ -36,14 +39,15 @@ public class Game {
         this.currentPhase = nextPhase;
         this.selectedWorker = selectedWorker;
         this.available = available;
+        this.godCards = godCards;
     }
 
     /**
      * Initialize players
      */
     public void initialPlayer() {
-        this.players[0] = new Player("Artemis", 0);
-        this.players[1] = new Player("Demeter", 1);
+        this.players[0] = new Player("Player A", 0);
+        this.players[1] = new Player("Player B", 1);
     }
 
     /**
@@ -83,7 +87,7 @@ public class Game {
                 nextPlayerIndex = this.currentPlayerIndex;
                 break;
         }
-        return new Game(this.board.updateSpace(target), this.players, nextPlayerIndex, this.winner, nextPhase, this.selectedWorker,null);
+        return new Game(this.board.updateSpace(target), this.players, nextPlayerIndex, this.winner, nextPhase, this.selectedWorker,null, this.godCards);
     }
 
     /**
@@ -95,22 +99,22 @@ public class Game {
             return this;
         }
         else{
-            if (!this.checkLoseMoveableWorker(this.players[this.currentPlayerIndex])){
+            if (!this.checkHasMoveableWorker(this.players[this.currentPlayerIndex])){
                 System.out.println("No moveable workers available!");
-                return new Game(this.board, this.players, this.currentPlayerIndex, 1 - this.currentPlayerIndex, TurnPhase.END_GAME, this.selectedWorker,null);
+                return new Game(this.board, this.players, this.currentPlayerIndex, 1 - this.currentPlayerIndex, TurnPhase.END_GAME, this.selectedWorker,null, this.godCards);
             }
             Worker worker=target.getOccupied();
             
             if(worker.getOwner().getId()!=this.currentPlayerIndex){
                 return this;
             }
-            List<Space> availableMoves = this.board.getAvailableMoves(worker);
+            List<Space> availableMoves = this.getAvailableMoves(this.board, worker);
             if (availableMoves.isEmpty()){
                 return this;
             }
             return new Game(
                 this.board, this.players, this.currentPlayerIndex, 
-                this.winner, TurnPhase.MOVE, worker, availableMoves
+                this.winner, TurnPhase.MOVE, worker, availableMoves, this.godCards
                 );
         }
     }
@@ -127,36 +131,49 @@ public class Game {
             return this;
         }
         srcSpace.removeWorker();
-        if(destSpace.getTowerLevel()==WINNING_TOWER_LEVEL){
-            return new Game(this.board.updateSpace(srcSpace).updateSpace(destSpace), this.players, this.currentPlayerIndex, this.currentPlayerIndex, TurnPhase.END_GAME, this.selectedWorker, null);
+        this.board = this.board.updateSpace(srcSpace).updateSpace(destSpace);
+        if(checkWinCondition(srcSpace, destSpace)){
+            return new Game(this.board, this.players, this.currentPlayerIndex, this.currentPlayerIndex, TurnPhase.END_GAME, this.selectedWorker, null, this.godCards);
         }
-        List<Space> buildableSpaces = this.board.getBuildableSpaces(this.selectedWorker);
+        List<Space> buildableSpaces = this.getAvailableBuilds(this.board, this.selectedWorker, null);
         if(buildableSpaces.isEmpty()){
             System.out.println("No buildable spaces available!");
-            return new Game(this.board, this.players, this.currentPlayerIndex, 1 - this.currentPlayerIndex, TurnPhase.END_GAME, this.selectedWorker,null);
+            return new Game(this.board, this.players, this.currentPlayerIndex, 1 - this.currentPlayerIndex, TurnPhase.END_GAME, this.selectedWorker,null, this.godCards);
         }
-        return new Game(this.board.updateSpace(srcSpace).updateSpace(destSpace), this.players, this.currentPlayerIndex, this.winner, TurnPhase.BUILD, this.selectedWorker, buildableSpaces);
+        return new Game(this.board, this.players, this.currentPlayerIndex, this.winner, TurnPhase.BUILD, this.selectedWorker, buildableSpaces, this.godCards);
     }
 
     /**
      * Build a tower after moving
      */
-    public Game buildTower(int x, int y) {
+    public Game firstBuildTower(int x, int y) {
         try{
             Space buildSpace = new Space(this.board.getSpace(x, y));
             buildSpace.build();
             this.board=this.board.updateSpace(buildSpace);
-            // check if the game should end
-            if(!this.checkLoseMoveableWorker(this.players[1-this.currentPlayerIndex])){
-                return new Game(this.board, this.players, 1 - this.currentPlayerIndex, this.currentPlayerIndex, TurnPhase.END_GAME, null, null);
-            }
-            return new Game(this.board, this.players, 1 - this.currentPlayerIndex, this.winner, TurnPhase.CHOOSE_WORKER, null, null);
+            
+            // TODO: add SECOND_BUILD phase
+            List<Space> secondBuildSpaces = this.getAvailableBuilds(this.board, this.selectedWorker, buildSpace);
+            if(!secondBuildSpaces.isEmpty()) {
+                return new Game(this.board, this.players, this.currentPlayerIndex, this.winner, TurnPhase.SECOND_BUILD, this.selectedWorker, secondBuildSpaces, this.godCards);
+            } 
+            return new Game(this.board, this.players, 1 - this.currentPlayerIndex, this.winner, TurnPhase.CHOOSE_WORKER, null, null, this.godCards);
+        } catch (IllegalArgumentException e) {
+            return this;
+        }
+    }
+    public Game secondBuildTower(int x, int y) {
+        try{
+            Space buildSpace = new Space(this.board.getSpace(x, y));
+            buildSpace.build();
+            this.board=this.board.updateSpace(buildSpace);
+            return new Game(this.board, this.players, 1-this.currentPlayerIndex, this.winner, TurnPhase.CHOOSE_WORKER, null, null, this.godCards);
         } catch (IllegalArgumentException e) {
             return this;
         }
     }
 
-    private boolean checkLoseMoveableWorker(Player player){
+    public boolean checkHasMoveableWorker(Player player){
         for(Worker worker:player.getWorkers()){
             List<Space> availableMoves=this.board.getAvailableMoves(worker);
             if(availableMoves!=null && !availableMoves.isEmpty()){
@@ -165,6 +182,25 @@ public class Game {
         }
         return false;
     }
+
+    public boolean checkWinCondition(Space from, Space to){
+        if(to.getTowerLevel()==WINNING_TOWER_LEVEL){
+            return true;
+        }
+        GodCard godCard=getGodCard();
+        return godCard.checkAdditionalCondition(from, to);
+    }
+
+    public List<Space> getAvailableMoves(Board board, Worker worker){
+        GodCard godCard=getGodCard();
+        return godCard.getAvailableMoves(board, worker);
+    }
+
+    public List<Space> getAvailableBuilds(Board board, Worker worker, Space firstBuild){
+        GodCard godCard=getGodCard();
+        return godCard.getAvailableBuilds(board, worker, firstBuild);
+    }
+
     // Getters for testing
     public Board getBoard() { return this.board; }
     public Player[] getPlayers() { return this.players; }
@@ -176,5 +212,8 @@ public class Game {
             return this.players[this.winner]; 
         }
         return null;
+    }
+    public GodCard getGodCard() {
+        return this.godCards[this.currentPlayerIndex];
     }
 }

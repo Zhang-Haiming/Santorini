@@ -71,7 +71,11 @@ public class App extends NanoHTTPD {
                     break;
                 case TurnPhase.BUILD:
                     System.out.println("Player " + (this.game.getCurrentPlayerIndex() + 1) + " building tower at (" + x + ", " + y + ")");
-                    this.game=this.game.buildTower(x, y);
+                    this.game=this.game.firstBuildTower(x, y);
+                    break;
+                case TurnPhase.SECOND_BUILD:
+                    System.out.println("Player " + (this.game.getCurrentPlayerIndex() + 1) + " building second tower at (" + x + ", " + y + ")");
+                    this.game=this.game.secondBuildTower(x, y);
                     break;
                 case TurnPhase.END_GAME:
                     System.out.println("Game Over! Winner: Player " + this.game.getWinner().toString());
