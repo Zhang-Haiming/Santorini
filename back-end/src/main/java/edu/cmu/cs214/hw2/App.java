@@ -1,6 +1,7 @@
 package edu.cmu.cs214.hw2;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Map;
 import fi.iki.elonen.NanoHTTPD;
 
@@ -30,7 +31,7 @@ public class App extends NanoHTTPD {
     }
     @Override
     public Response serve(IHTTPSession session) {
-        Map<String, String> params = session.getParms();
+        Map<String, List<String>> params = session.getParameters();
         String uri = session.getUri();
         // if(this.game.getCurrentPhase()==TurnPhase.END_GAME){
         //     System.out.println("Game Over! Winner: Player " + this.game.getWinner().toString());
@@ -41,10 +42,18 @@ public class App extends NanoHTTPD {
         if (uri.equals("/newgame")){
             System.out.println("Starting a new game...");
             this.game = new Game();
+        } else if (uri.equals("/chooseGodCard")){
+            String godCard=params.get("god").get(0);
+            System.out.println("Player " + (this.game.getCurrentPlayerIndex() + 1) + " choosing god card: " + godCard);
+            this.game=this.game.chooseGodCard(godCard);
         } else if (uri.equals("/play")){
-            int x=Integer.parseInt(params.get("x"));
-            int y=Integer.parseInt(params.get("y"));
+            int x=Integer.parseInt(params.get("x").get(0));
+            int y=Integer.parseInt(params.get("y").get(0));
             switch (this.game.getCurrentPhase()){
+                case TurnPhase.PLAYER1_CHOOSE_GODCARD:
+                case TurnPhase.PLAYER2_CHOOSE_GODCARD:
+                    // God card choosing is handled in /chooseGodCard endpoint
+                    break;
                 case TurnPhase.PLAYER1_INITIAL_WORKER1:
                     System.out.println("Player 1 placing initial worker 1 at (" + x + ", " + y + ")");
                     this.game=this.game.placeInitialWorker(0,0,x,y);
@@ -74,7 +83,7 @@ public class App extends NanoHTTPD {
                     this.game=this.game.firstBuildTower(x, y);
                     break;
                 case TurnPhase.SECOND_BUILD:
-                    System.out.println("Player " + (this.game.getCurrentPlayerIndex() + 1) + " building second tower at (" + x + ", " + y + ")");
+                    System.out.println("Player " + (this.game.getCurrentPlayerIndex() + 1) + " performing second build at (" + x + ", " + y + ")");
                     this.game=this.game.secondBuildTower(x, y);
                     break;
                 case TurnPhase.END_GAME:

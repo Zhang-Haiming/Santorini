@@ -11,18 +11,21 @@ public class GameState {
     private final Cell[] cells;
     private final String message;
     private final String winner;
+    private final String[] availableGodCards;
 
-    private GameState(Cell[] cells, String message, String winner) {
+    private GameState(Cell[] cells, String message, String winner, String[] availableGodCards) {
         this.cells = cells;
         this.message = message;
         this.winner = winner;
+        this.availableGodCards = availableGodCards;
     }
     
     public static GameState forGame(Game game){
         Cell[] cells=getCells(game);
         String message=getMessage(game);
         String winner=getWinner(game);
-        return new GameState(cells, message, winner);
+        String[] availableGodCards = getAvailableGodCards(game);
+        return new GameState(cells, message, winner, availableGodCards);
     }
     public Cell[] getCells(){
         return this.cells;
@@ -33,12 +36,14 @@ public class GameState {
         {
             "cells": %s,
             "message": "%s",
-            "winner": %s
+            "winner": %s,
+            "availableGodCards": %s
         }
         """.formatted(
             Arrays.toString(this.cells), 
             this.message, 
-            this.winner!=null ? "\""+this.winner+"\"":"null"
+            this.winner!=null ? "\""+this.winner+"\"":"null", 
+            this.availableGodCards!=null ? Arrays.toString(this.availableGodCards) : "null"
             );
                 
     }
@@ -68,6 +73,9 @@ public class GameState {
 
     private static boolean isPlayable(Game game, int row, int col, Space space,TurnPhase phase){
         switch(phase){
+            case TurnPhase.PLAYER1_CHOOSE_GODCARD:
+            case TurnPhase.PLAYER2_CHOOSE_GODCARD:
+                return false;
             case TurnPhase.PLAYER1_INITIAL_WORKER1:
             case TurnPhase.PLAYER1_INITIAL_WORKER2:
             case TurnPhase.PLAYER2_INITIAL_WORKER1:
@@ -78,7 +86,7 @@ public class GameState {
                     return false;
                 }
                 Worker worker=space.getOccupied();
-                List<Space> availableMovesCheck=game.getBoard().getAvailableMoves(worker);
+                List<Space> availableMovesCheck=game.getAvailableMoves(game.getBoard(), worker);
                 if(availableMovesCheck==null ||availableMovesCheck.isEmpty()){
                     return false;
                 }
@@ -88,17 +96,19 @@ public class GameState {
                 if (selectedWorker==null){
                     return false;
                 }
-                List<Space> availableMoves=game.getBoard().getAvailableMoves(selectedWorker);
+                //List<Space> availableMoves=game.getBoard().getAvailableMoves(selectedWorker);
+                List<Space> availableMoves=game.getAvailable();
                 if(availableMoves.isEmpty()){
                     return false;
                 }
                 return availableMoves.contains(space);
             case TurnPhase.BUILD:
-                Worker movingWorker=game.getWorker();
-                if (movingWorker==null){
+            case TurnPhase.SECOND_BUILD:
+                Worker buildingWorker=game.getWorker();
+                if (buildingWorker==null){
                     return false;
                 }
-                List<Space> availableBuilds=game.getBoard().getBuildableSpaces(movingWorker);
+                List<Space> availableBuilds=game.getAvailable();
                 return availableBuilds.contains(space);
             case TurnPhase.END_GAME:
                 return false;
@@ -114,10 +124,10 @@ public class GameState {
         if (space.isOccupied()){
             Worker worker = space.getOccupied();
             String playerName = worker.getOwner().getPlayer();
-            if(playerName.equals("Artemis")){
+            if(playerName.equals("Player A")){
                 text.append("A");
-            } else if (playerName.equals("Demeter")){
-                text.append("D");
+            } else if (playerName.equals("Player B")){
+                text.append("B");
             } 
             
         }
@@ -131,6 +141,10 @@ public class GameState {
         TurnPhase phase=game.getCurrentPhase();
         Player[] players=game.getPlayers();
         switch(phase){
+            case TurnPhase.PLAYER1_CHOOSE_GODCARD:
+                return players[0].getPlayer() + "- choose your god card.";
+            case TurnPhase.PLAYER2_CHOOSE_GODCARD:
+                return players[1].getPlayer() + "- choose your god card.";
             case TurnPhase.PLAYER1_INITIAL_WORKER1:
                 return players[0].getPlayer() + "- place your worker 1.";
             case TurnPhase.PLAYER1_INITIAL_WORKER2:
@@ -145,6 +159,8 @@ public class GameState {
                 return players[game.getCurrentPlayerIndex()].getPlayer() + ", move your selected worker.";
             case TurnPhase.BUILD:
                 return players[game.getCurrentPlayerIndex()].getPlayer() + ", build with your selected worker.";
+            case TurnPhase.SECOND_BUILD:
+                return players[game.getCurrentPlayerIndex()].getPlayer() + ", you can build again with your selected worker.";
             case TurnPhase.END_GAME:
                 return game.getWinner().getPlayer() + " wins!";
             default:
@@ -155,6 +171,14 @@ public class GameState {
     private static String getWinner(Game game){
         if(game.getCurrentPhase()==TurnPhase.END_GAME){
             return game.getWinner().getPlayer();
+        }
+        return null;
+    }
+
+    public static String[] getAvailableGodCards(Game game){
+        TurnPhase phase=game.getCurrentPhase();
+        if(phase==TurnPhase.PLAYER1_CHOOSE_GODCARD || phase==TurnPhase.PLAYER2_CHOOSE_GODCARD){
+            return new String[]{"Demeter", "Hephaestus", "Pan", "Minotaur","NoGodCard"};
         }
         return null;
     }

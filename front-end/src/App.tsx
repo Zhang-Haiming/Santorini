@@ -25,14 +25,92 @@ class App extends React.Component<Props, GameState> {
      * State matches the JSON from backend:
      * {
      *   cells: [...],
-     *   message: "Artemis - place your worker 1.",
+     *   message: "Player A - place your worker 1.",
      *   winner: null
      * }
      */
     this.state = {
       cells: [],
       message: '',
-      winner: null
+      winner: null,
+      availableGods: null,
+      player1God: null,
+      player2God: null
+    }
+  }
+
+  selectGod = async (godName: string) => {
+    const godSelection = document.querySelector('.god-selection')
+    if (godSelection != null) {
+      godSelection.classList.add('animate__animated', 'animate__fadeOut')
+      setTimeout(async () => {
+        const response = await fetch(`/selectGod?god=${godName}`)
+        const json = await response.json()
+        this.setState(json)
+        godSelection.classList.remove('animate__fadeOut')
+        godSelection.classList.add('animate__fadeIn')
+      }, 300)
+    } else {
+      const response = await fetch(`/selectGod?god=${godName}`)
+      const json = await response.json()
+      this.setState(json)
+    }
+  }
+
+  renderGodSelection (): React.ReactNode {
+    if (this.state.availableGods != null && this.state.availableGods.length > 0) {
+      return (
+        <div className='App animate__animated animate__fadeIn'>
+          <div className='game-title'>
+            <h1>🏛️ Santorini 🏛️</h1>
+          </div>
+
+          <div className='god-selection animate__animated animate__zoomIn'>
+            <h2>⚡ Choose Your God Card ⚡</h2>
+
+            {/* show which gods have been selected */}
+            {(this.state.player1God || this.state.player2God) && (
+              <div className='selected-gods-banner'>
+                {this.state.player1God && (
+                  <div className='selected-god-item'>
+                    <span className='player-label player-a'>Player A:</span>
+                    <span className='god-label'>{this.state.player1God}</span>
+                  </div>
+                )}
+                {this.state.player2God && (
+                  <div className='selected-god-item'>
+                    <span className='player-label player-b'>Player B:</span>
+                    <span className='god-label'>{this.state.player2God}</span>
+                  </div>
+                )}
+              </div>
+            )}
+          
+          <div className='selection-message'>
+            {this.state.message}
+          </div>
+
+          {/* God cards grid */}
+          <div className='god-cards'>
+            {this.state.availableGods.map((godName, index) => (
+              <div
+                key={godName}
+                className='god-card animate__animated animate__fadeIn'
+                onClick={() => this.selectGod(godName)}
+              >
+                <h3>{godName}</h3>
+                <button className='select-button'>Choose {godName}</button>
+              </div>
+            ))}
+          </div>
+
+          {/* Instructions */}
+          <div className='god-selection-instructions'></div>
+            <p>Select a god card to gain special abilities.</p>
+            <p><em>Suppose players can choose the same god.</em></p>
+          </div>
+        </div>
+      )
     }
   }
 
@@ -88,6 +166,12 @@ class App extends React.Component<Props, GameState> {
     }
   }
 
+  passGodPower = async ()=>{
+    const response = await fetch('/pass')
+    const json = await response.json()
+    this.setState(json)
+  }
+
   /**
    * Create a single cell element
    * Same pattern as tic-tac-toe
@@ -135,7 +219,7 @@ class App extends React.Component<Props, GameState> {
    * Render the UI
    * Same pattern as tic-tac-toe but with Santorini-specific elements
    */
-  render (): React.ReactNode {
+  renderGameBoard (): React.ReactNode {
     return (
       <div className='App animate__animated animate__fadeIn'>
         {/* Game title */}
@@ -177,16 +261,26 @@ class App extends React.Component<Props, GameState> {
             <li><strong>Lose:</strong> Cannot make any valid moves</li>
           </ol>
           <div className='player-legend'>
-            <div className='player-item artemis'>
-              <span className='symbol'>A</span> = Artemis (Red)
+            <div className='player-item player-a'>
+              <span className='symbol'>A</span> = Player A (Red)
             </div>
-            <div className='player-item demeter'>
-              <span className='symbol'>D</span> = Demeter (Blue)
+            <div className='player-item player-b'>
+              <span className='symbol'>B</span> = Player B (Blue)
             </div>
           </div>
         </div>
       </div>
     )
+  }
+
+  render (): React.ReactNode {
+    // If gods need to be selected, show that screen
+    if (this.state.availableGods != null && this.state.availableGods.length > 0) {
+      return this.renderGodSelection()
+    } else {
+      // Otherwise show main game board
+      return this.renderGameBoard()
+    }
   }
 }
 

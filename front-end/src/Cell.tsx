@@ -25,7 +25,11 @@ class BoardCell extends React.Component<Props> {
       classes.push('playable')
     }
 
-    // Add player-specific class if occupied\n    if (cell.occupiedBy != null) {\n      classes.push('occupied')\n      classes.push(cell.occupiedBy.toLowerCase()) // 'artemis' or 'demeter'\n    }
+    // Add player-specific class if occupied
+    if (cell.occupiedBy != null) {
+      classes.push('occupied')
+      classes.push(cell.occupiedBy.toLowerCase().replace(' ', '-')) // 'player-a' or 'player-b'
+    }
 
     // Add dome class if has dome
     if (cell.hasDome) {
@@ -39,6 +43,13 @@ class BoardCell extends React.Component<Props> {
         <div className='cell-text'>
           {cell.text}
         </div>
+
+        {/* Player badge - show A or B in a circle */}
+        {cell.occupiedBy != null && (
+          <div className='player-badge'>
+            {cell.occupiedBy === 'Player A' ? 'A' : 'B'}
+          </div>
+        )}
 
         {/* Optional: Visual tower indicator */}
         {cell.towerLevel > 0 && (

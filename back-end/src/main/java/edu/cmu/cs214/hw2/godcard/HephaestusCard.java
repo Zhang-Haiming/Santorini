@@ -1,7 +1,7 @@
 package edu.cmu.cs214.hw2.godcard;
+import edu.cmu.cs214.hw2.Space;
 import edu.cmu.cs214.hw2.Board;
 import edu.cmu.cs214.hw2.Worker;
-import edu.cmu.cs214.hw2.Space;
 
 import java.util.ArrayList;
 import java.util.List;

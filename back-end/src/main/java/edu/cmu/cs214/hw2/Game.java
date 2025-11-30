@@ -2,6 +2,11 @@ package edu.cmu.cs214.hw2;
 
 import java.util.List;
 import edu.cmu.cs214.hw2.godcard.GodCard;
+import edu.cmu.cs214.hw2.godcard.DemeterCard;
+import edu.cmu.cs214.hw2.godcard.HephaestusCard;
+import edu.cmu.cs214.hw2.godcard.PanCard;
+import edu.cmu.cs214.hw2.godcard.MinotaurCard;
+import edu.cmu.cs214.hw2.godcard.NoGodCard;
 
 /**
  * Main game controller for Santorini
@@ -24,7 +29,7 @@ public class Game {
         this.players = new Player[2];
         this.currentPlayerIndex = 0;
         this.winner=-1;
-        this.currentPhase=TurnPhase.PLAYER1_INITIAL_WORKER1;
+        this.currentPhase=TurnPhase.PLAYER1_CHOOSE_GODCARD;
         this.selectedWorker=null;
         this.available=null;
         this.godCards=new GodCard[]{null,null};
@@ -48,6 +53,34 @@ public class Game {
     public void initialPlayer() {
         this.players[0] = new Player("Player A", 0);
         this.players[1] = new Player("Player B", 1);
+    }
+
+    public Game chooseGodCard(String godName){
+        GodCard godcard;
+        switch (godName.toLowerCase()){
+            case "demeter":
+                godcard=new DemeterCard();
+                break;
+            case "hephaestus":
+                godcard=new HephaestusCard();
+                break;
+            case "pan":
+                godcard=new PanCard();
+                break;
+            case "minotaur":
+                godcard=new MinotaurCard();
+                break;
+            default:
+                godcard=new NoGodCard();
+                break;
+        }
+        GodCard[] newGodCards = this.godCards.clone();
+        newGodCards[this.currentPlayerIndex]=godcard;
+        if(this.currentPhase==TurnPhase.PLAYER1_CHOOSE_GODCARD){
+            return new Game(this.board, this.players, 1, this.winner, TurnPhase.PLAYER2_CHOOSE_GODCARD, this.selectedWorker, this.available, newGodCards);
+        } else {
+            return new Game(this.board, this.players, 0, this.winner, TurnPhase.PLAYER1_INITIAL_WORKER1, this.selectedWorker, this.available, newGodCards);
+        }
     }
 
     /**
@@ -175,7 +208,7 @@ public class Game {
 
     public boolean checkHasMoveableWorker(Player player){
         for(Worker worker:player.getWorkers()){
-            List<Space> availableMoves=this.board.getAvailableMoves(worker);
+            List<Space> availableMoves=this.getAvailableMoves(this.board, worker);
             if(availableMoves!=null && !availableMoves.isEmpty()){
                 return true;
             }
@@ -213,6 +246,7 @@ public class Game {
         }
         return null;
     }
+    public List<Space> getAvailable() { return this.available; }
     public GodCard getGodCard() {
         return this.godCards[this.currentPlayerIndex];
     }

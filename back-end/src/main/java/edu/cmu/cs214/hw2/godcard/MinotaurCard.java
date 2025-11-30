@@ -1,7 +1,7 @@
 package edu.cmu.cs214.hw2.godcard;
 import edu.cmu.cs214.hw2.Game;
-import edu.cmu.cs214.hw2.Space;
 import edu.cmu.cs214.hw2.Worker;
+import edu.cmu.cs214.hw2.Space;
 
 public class MinotaurCard implements GodCard {
     @Override

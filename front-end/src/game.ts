@@ -7,6 +7,9 @@ interface GameState {
   cells: Cell[] // Array of 25 cells (5x5 grid)
   message: string // Current instruction message
   winner: string | null // Winner name or null
+  availableGods: string[] | null // List of available gods for selection
+  player1God: string | null // God chosen by Player A
+  player2God: string | null // God chosen by Player B
 }
 
 interface Cell {
