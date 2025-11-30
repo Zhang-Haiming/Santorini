@@ -35,23 +35,28 @@ class App extends React.Component<Props, GameState> {
       winner: null,
       availableGods: null,
       player1God: null,
-      player2God: null
+      player2God: null,
+      currentPlayerIndex: 0
     }
   }
 
+  /**
+   * handle god seslection
+   * @param godName 
+   */
   selectGod = async (godName: string) => {
     const godSelection = document.querySelector('.god-selection')
     if (godSelection != null) {
       godSelection.classList.add('animate__animated', 'animate__fadeOut')
       setTimeout(async () => {
-        const response = await fetch(`/selectGod?god=${godName}`)
+        const response = await fetch(`/choosegod?god=${godName}`)
         const json = await response.json()
         this.setState(json)
         godSelection.classList.remove('animate__fadeOut')
         godSelection.classList.add('animate__fadeIn')
       }, 300)
     } else {
-      const response = await fetch(`/selectGod?god=${godName}`)
+      const response = await fetch(`/choosegod?god=${godName}`)
       const json = await response.json()
       this.setState(json)
     }
@@ -68,27 +73,9 @@ class App extends React.Component<Props, GameState> {
           <div className='god-selection animate__animated animate__zoomIn'>
             <h2>⚡ Choose Your God Card ⚡</h2>
 
-            {/* show which gods have been selected */}
-            {(this.state.player1God || this.state.player2God) && (
-              <div className='selected-gods-banner'>
-                {this.state.player1God && (
-                  <div className='selected-god-item'>
-                    <span className='player-label player-a'>Player A:</span>
-                    <span className='god-label'>{this.state.player1God}</span>
-                  </div>
-                )}
-                {this.state.player2God && (
-                  <div className='selected-god-item'>
-                    <span className='player-label player-b'>Player B:</span>
-                    <span className='god-label'>{this.state.player2God}</span>
-                  </div>
-                )}
-              </div>
-            )}
-          
-          <div className='selection-message'>
-            {this.state.message}
-          </div>
+            <div className='selection-message'>
+              {this.state.message}
+            </div>
 
           {/* God cards grid */}
           <div className='god-cards'>
@@ -99,6 +86,7 @@ class App extends React.Component<Props, GameState> {
                 onClick={() => this.selectGod(godName)}
               >
                 <h3>{godName}</h3>
+                <p className='god-description'>{this.getGodDescription(godName)}</p>
                 <button className='select-button'>Choose {godName}</button>
               </div>
             ))}
@@ -112,6 +100,18 @@ class App extends React.Component<Props, GameState> {
         </div>
       )
     }
+    return null
+  }
+
+  getGodDescription(godName: string): string {
+    const godDescriptions: { [key: string]: string } = {
+      Demeter: 'Your Worker may build one additional time, but not on the same space.',
+      Hephaestus: 'Your Worker may build one additional block (not dome) on top of your first block.',
+      Minotaur: 'Your Worker may push an opponent Worker`s space',
+      Pan: 'You also win if your Worker moves down two or more levels.',
+      NoGodCard: 'No special abilities.'
+    }
+    return godDescriptions[godName] || 'Special god ability.'
   }
 
   /**
@@ -166,10 +166,19 @@ class App extends React.Component<Props, GameState> {
     }
   }
 
-  passGodPower = async ()=>{
+  pass = async ()=>{
     const response = await fetch('/pass')
     const json = await response.json()
     this.setState(json)
+  }
+
+  shouldShowPassButton(): boolean {
+    const isSecondBuildPhase = this.state.message.toLowerCase().includes('build again')
+    if(!isSecondBuildPhase){
+      return false
+    }
+    const currentGod=this.state.currentPlayerIndex===0?this.state.player1God:this.state.player2God
+    return currentGod==='Demeter' || currentGod==='Hephaestus'
   }
 
   /**
@@ -227,10 +236,34 @@ class App extends React.Component<Props, GameState> {
           <h1>🏛️ Santorini 🏛️</h1>
         </div>
 
+        {/* God Cards Banner */}
+        {this.state.player1God!=null && this.state.player2God!=null && (
+          <div className='gods-banner animate__animated animate__slideInDown'>
+            <div className='god-info player-a-god'>
+              <span className='player-label'>Player A:</span> 
+              <span className='god-name'>{this.state.player1God|| 'No God Card'}</span>
+            </div>
+            <div className='god-info player-b-god'>
+              <span className='player-label'>Player B:</span> 
+              <span className='god-name'>{this.state.player2God|| 'No God Card'}</span>
+            </div>
+          </div>
+        )}
+
         {/* Message bar - shows current instruction */}
         <div id='message' className='animate__animated animate__slideInDown'>
           {this.state.message || 'Loading...'}
         </div>
+
+        {/* Pass button for Demeter and Hephaestus */}
+        {this.shouldShowPassButton() && (
+          <div className='pass-button-container animate__animated animate__slideInDown'>
+            <button className='pass-button' onClick={this.pass}>
+              ⏭️ Pass Second Build
+            </button>
+            <p className='pass-hint'>You can skip your second build phase.</p>
+          </div>
+        )}
 
         {/* Game board - 5x5 grid */}
         <div id='board' className='animate__animated animate__slideInDown'>

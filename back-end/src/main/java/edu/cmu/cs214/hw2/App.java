@@ -42,11 +42,14 @@ public class App extends NanoHTTPD {
         if (uri.equals("/newgame")){
             System.out.println("Starting a new game...");
             this.game = new Game();
-        } else if (uri.equals("/chooseGodCard")){
+        } else if (uri.equals("/choosegod")){
             String godCard=params.get("god").get(0);
             System.out.println("Player " + (this.game.getCurrentPlayerIndex() + 1) + " choosing god card: " + godCard);
             this.game=this.game.chooseGodCard(godCard);
-        } else if (uri.equals("/play")){
+        } else if (uri.equals("/pass")){
+            System.out.println("Player " + (this.game.getCurrentPlayerIndex() + 1) + " passing turn.");
+            this.game=this.game.pass();
+        }else if (uri.equals("/play")){
             int x=Integer.parseInt(params.get("x").get(0));
             int y=Integer.parseInt(params.get("y").get(0));
             switch (this.game.getCurrentPhase()){

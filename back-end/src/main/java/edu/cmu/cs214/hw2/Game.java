@@ -184,8 +184,6 @@ public class Game {
             Space buildSpace = new Space(this.board.getSpace(x, y));
             buildSpace.build();
             this.board=this.board.updateSpace(buildSpace);
-            
-            // TODO: add SECOND_BUILD phase
             List<Space> secondBuildSpaces = this.getAvailableBuilds(this.board, this.selectedWorker, buildSpace);
             if(!secondBuildSpaces.isEmpty()) {
                 return new Game(this.board, this.players, this.currentPlayerIndex, this.winner, TurnPhase.SECOND_BUILD, this.selectedWorker, secondBuildSpaces, this.godCards);
@@ -204,6 +202,14 @@ public class Game {
         } catch (IllegalArgumentException e) {
             return this;
         }
+    }
+
+    // pass second build
+    public Game pass(){
+        if (this.currentPhase == TurnPhase.SECOND_BUILD) {
+            return new Game(this.board, this.players, 1 - this.currentPlayerIndex, this.winner, TurnPhase.CHOOSE_WORKER, null, null, this.godCards);
+        }
+        return this;
     }
 
     public boolean checkHasMoveableWorker(Player player){
@@ -249,5 +255,8 @@ public class Game {
     public List<Space> getAvailable() { return this.available; }
     public GodCard getGodCard() {
         return this.godCards[this.currentPlayerIndex];
+    }
+    public GodCard[] getGodCards() {
+        return this.godCards;
     }
 }

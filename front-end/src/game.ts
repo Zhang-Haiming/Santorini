@@ -8,8 +8,9 @@ interface GameState {
   message: string // Current instruction message
   winner: string | null // Winner name or null
   availableGods: string[] | null // List of available gods for selection
-  player1God: string | null // God chosen by Player A
-  player2God: string | null // God chosen by Player B
+  player1God: string | null // Player 1's selected god
+  player2God: string | null // Player 2's selected god
+  currentPlayerIndex: number // Current player
 }
 
 interface Cell {

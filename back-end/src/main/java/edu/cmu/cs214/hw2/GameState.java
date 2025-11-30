@@ -1,5 +1,6 @@
 package edu.cmu.cs214.hw2;
 
+import edu.cmu.cs214.hw2.godcard.GodCard;
 import java.util.Arrays;
 import java.util.List;
 
@@ -12,12 +13,18 @@ public class GameState {
     private final String message;
     private final String winner;
     private final String[] availableGodCards;
+    private final String player1God;
+    private final String player2God;
+    private final int currentPlayerIndex;
 
-    private GameState(Cell[] cells, String message, String winner, String[] availableGodCards) {
+    private GameState(Cell[] cells, String message, String winner, String[] availableGodCards, String player1God, String player2God, int currentPlayerIndex) {
         this.cells = cells;
         this.message = message;
         this.winner = winner;
         this.availableGodCards = availableGodCards;
+        this.player1God = player1God;
+        this.player2God = player2God;
+        this.currentPlayerIndex = currentPlayerIndex;
     }
     
     public static GameState forGame(Game game){
@@ -25,7 +32,10 @@ public class GameState {
         String message=getMessage(game);
         String winner=getWinner(game);
         String[] availableGodCards = getAvailableGodCards(game);
-        return new GameState(cells, message, winner, availableGodCards);
+        String player1God = getPlayerGod(game, 0);
+        String player2God = getPlayerGod(game, 1);
+        int currentPlayerIndex = game.getCurrentPlayerIndex();
+        return new GameState(cells, message, winner, availableGodCards, player1God, player2God, currentPlayerIndex);
     }
     public Cell[] getCells(){
         return this.cells;
@@ -37,14 +47,20 @@ public class GameState {
             "cells": %s,
             "message": "%s",
             "winner": %s,
-            "availableGodCards": %s
+            "availableGodCards": %s,
+            "player1God": %s,
+            "player2God": %s,
+            "currentPlayerIndex": %d
         }
         """.formatted(
             Arrays.toString(this.cells), 
             this.message, 
             this.winner!=null ? "\""+this.winner+"\"":"null", 
-            this.availableGodCards!=null ? Arrays.toString(this.availableGodCards) : "null"
-            );
+            this.availableGodCards!=null ? Arrays.toString(this.availableGodCards) : "null",
+            this.player1God != null ? "\""+this.player1God+"\"" : "null",
+            this.player2God != null ? "\""+this.player2God+"\"" : "null",
+            this.currentPlayerIndex   
+        );
                 
     }
     private static Cell[] getCells(Game game){
@@ -175,10 +191,18 @@ public class GameState {
         return null;
     }
 
-    public static String[] getAvailableGodCards(Game game){
+    private static String[] getAvailableGodCards(Game game){
         TurnPhase phase=game.getCurrentPhase();
         if(phase==TurnPhase.PLAYER1_CHOOSE_GODCARD || phase==TurnPhase.PLAYER2_CHOOSE_GODCARD){
             return new String[]{"Demeter", "Hephaestus", "Pan", "Minotaur","NoGodCard"};
+        }
+        return null;
+    }
+
+    private static String getPlayerGod(Game game, int playerIndex){
+        GodCard[] godCards = game.getGodCards();
+        if(godCards != null && godCards[playerIndex] != null){
+            return godCards[playerIndex].getName();
         }
         return null;
     }
