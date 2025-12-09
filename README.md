@@ -2,9 +2,12 @@
 
 ## Rules
 
-Santorini is a two-player strategy board game where players take turns moving their workers and building structures.
+Santorini is a two-player strategy board game where players take turns moving their workers and building structures. Players can choose god cards that provide unique abilities to their workers, adding strategic depth to the game.
+
 In each turn, a player must move one of their two workers to an adjacent space and then build a level of a building on an adjacent space.
+
 The win-condition is to be the first player to move one of their workers onto the third level of a building.
+
 Player loses the game if they cannot make a legal turn.
 
 ## Setup backend
@@ -28,3 +31,7 @@ npm start
 ```
 
 This will start the React development server at http://localhost:3000.
+
+## Academic Integrity Regulations
+
+Due to the academic integrity regulations, I am not permitted to provide further details here. Please reach out to me directly if you have any questions.

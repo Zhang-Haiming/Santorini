@@ -1,0 +1,19 @@
+# Ignore all .log files
+*.log
+
+# Ignore all files in the temp/ directory
+target/
+node_modules/
+build/
+.DS_Store
+back-end/target/
+# Ignore a specific file
+behavior-contract.docx
+build-justification.md
+build-interaction.svg
+design_files.zip
+tree.txt
+# Ignore all .env files anywhere
+.env
+*.docx
+*.drawio
